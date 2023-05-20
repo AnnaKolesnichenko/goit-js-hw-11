@@ -1,0 +1,59 @@
+body {
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-bottom: 20px;
+    margin-right: 20px;
+}
+
+.search-form input {
+    border-radius: 5px;
+    border: 1px solid rgb(118, 82, 236);
+}
+
+.search-form {
+    display: flex;
+    gap: 20px;
+    height: 40px;
+    margin-bottom: 20px;
+}
+
+button {
+    width: 100px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: rgb(159, 159, 242);
+    color: white;
+    border-radius: 5px;
+    border: 1px solid rgb(118, 82, 236);
+}
+
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.photo-card {
+    width: 260px;
+    box-shadow: 2px 2px 5px rgb(225, 222, 236);;
+
+}
+
+.photo-card img {
+    width: 260px;
+    height: 200px;
+}
+
+
+.info-item {
+   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+.submit-btn {
+    display: block;
+    margin-top: 20px;
+}
+
+.submit-btn.hidden {
+    display: none;
+}
