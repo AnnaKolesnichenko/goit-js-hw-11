@@ -1,14 +1,18 @@
 import API from "./fetchPixa.js";
 import Notiflix from "notiflix";
 import LoadButton from "./components/LoadButton.js";
+import SimpleLightbox from "simplelightbox";
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const searchForm = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
 const submitBtn = document.querySelector('.submit-btn');
 const searchBtn = document.querySelector('.search-form button');
 
-let page = 1;
+let currentPage = 1;
 let searchValue = '';
+let totalHits = 1;
+
 
 const loadingButton = new LoadButton({
     selector: ".submit-btn",
@@ -21,15 +25,14 @@ function onSubmitForm(e) {
     const eForm = e.currentTarget;
     const inputValue = eForm.elements.searchQuery.value.trim();
     searchValue = inputValue;
-    page = 1;
+    currentPage = 1;
 
     loadingButton.hideButton();
     clearGallery();
-    loadingButton.disableButton();
-
-    if(inputValue === 0) {
-        searchBtn.disabled = true;
-        Notiflix.Notify.warning('Add a search parameter');
+    
+    if(inputValue === '') {
+        Notiflix.Notify.info("Please write your request");
+        return;
     }
 
     API.fetchPixabay(inputValue)
@@ -42,7 +45,8 @@ function onSubmitForm(e) {
         );
     })
     .then(updateSearch)
-    .then(loadingButton.showButton())
+    .then(() => loadingButton.showButton())
+    .then(() => loadingButton.enableButton())
     .catch(onError)
     .finally(() => searchForm.reset());
 }
@@ -50,9 +54,9 @@ function onSubmitForm(e) {
 
 //creating uploading func
 function onUploadingMore() {
-    page += 1;
+    currentPage += 1;
 
-    API.fetchPixabay(searchValue, page) 
+    API.fetchPixabay(searchValue, currentPage) 
     .then(data => {
         if(data.hits.length === 0) {
             throw new Error("Sorry, there are no images matching your search query. Please try again.");
@@ -62,6 +66,7 @@ function onUploadingMore() {
         );
     })
     .then(updateSearch)
+    .then(loadingButton.enableButton())
     .catch(onError);
 }
 
@@ -75,27 +80,31 @@ function clearGallery() {
     gallery.innerHTML = "";
 }
 
+
 //creating html markup for every picture
 function addMarkUp(hit) {
-    const {webformatURL, largeImaheURL, tags, likes, views, comments, downloads} = hit;
+    const {webformatURL, largeImageURL, tags, likes, views, comments, downloads} = hit;
     return `
     <div class="photo-card">
-    <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-    <div class="info">
-      <p class="info-item">
-        <b>Likes: ${likes}</b>
-      </p>
-      <p class="info-item">
-        <b>Views: ${views}</b>
-      </p>
-      <p class="info-item">
-        <b>Comments: ${comments}</b>
-      </p>
-      <p class="info-item">
-        <b>Downloads: ${downloads}</b>
-      </p>
+        <a href="${largeImageURL}">
+            <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+        </a>
+        
+        <div class="info">
+            <p class="info-item">
+                <b>Likes: ${likes}</b>
+            </p>
+            <p class="info-item">
+                <b>Views: ${views}</b>
+            </p>
+            <p class="info-item">
+                <b>Comments: ${comments}</b>
+            </p>
+            <p class="info-item">
+                <b>Downloads: ${downloads}</b>
+            </p>
+        </div>
     </div>
-  </div>
     `
 }
 
@@ -105,6 +114,16 @@ function onError(error) {
     alert(error);
 }
 
+//lightbox
+gallery.addEventListener('click', (e) => {
+    e.preventDefault();
+    const lightBox = new SimpleLightbox('.photo-card a',
+    {captionDelay: 250, 
+     enableKeyboard: true, 
+     captionsData: 'alt', 
+     captions: true})
+});
+
 searchForm.addEventListener('submit', onSubmitForm);
-submitBtn.addEventListener('click', onUploadingMore);
+loadingButton.button.addEventListener('click', onUploadingMore);
 

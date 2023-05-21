@@ -8,7 +8,7 @@ export default class LoadButton {
         const {selector, isHidden = true} = button;
         this.button = this.getButton(selector);
         if(isHidden) {
-            this.hideButton;
+            this.hideButton();
         }
     }
 
