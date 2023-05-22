@@ -20,7 +20,7 @@ const loadingButton = new LoadButton({
 });
 
 //submitting search for a first page
-function onSubmitForm(e) {
+async function onSubmitForm(e) {
     e.preventDefault();    
     const eForm = e.currentTarget;
     const inputValue = eForm.elements.searchQuery.value.trim();
@@ -35,40 +35,67 @@ function onSubmitForm(e) {
         return;
     }
 
-    API.fetchPixabay(inputValue)
-    .then(data => {
+    try {
+        const data = await API.fetchPixabay(inputValue);
+
+        if(data.totalHits > 0) {
+            Notiflix.Notify.info(`Hooray! We found ${data.totalHits} images.`);
+        }
+        
         if(data.hits.length === 0) {
             Notiflix.Notify.info("Sorry, there are no images matching your search query. Please try again.");
+        } else {
+            const markup = data.hits.reduce((markup, hit) => markup + addMarkUp(hit), " ");
+            updateSearch(markup);
+            loadingButton.showButton();
+            loadingButton.enableButton();
+
+            const { height: cardHeight } = document
+            .querySelector(".gallery")
+            .firstElementChild.getBoundingClientRect();
+
+            window.scrollBy({
+            top: cardHeight * 2,
+            behavior: "smooth",
+            });
         }
-        return data.hits.reduce((markup, hit) => markup + addMarkUp(hit), 
-        " "
-        );
-    })
-    .then(updateSearch)
-    .then(() => loadingButton.showButton())
-    .then(() => loadingButton.enableButton())
-    .catch(onError)
-    .finally(() => searchForm.reset());
-}
+        
+        } catch(error) {
+            onError(error);
+        } finally {
+           searchForm.reset();
+        }
+    }
 
 
 //creating uploading func
-function onUploadingMore() {
+async function onUploadingMore() {
     currentPage += 1;
 
-    API.fetchPixabay(searchValue, currentPage) 
-    .then(data => {
-        if(data.hits.length === 0) {
-            throw new Error("Sorry, there are no images matching your search query. Please try again.");
-        }
-        return data.hits.reduce((markup, hit) => markup + addMarkUp(hit), 
-        " "
-        );
-    })
-    .then(updateSearch)
-    .then(loadingButton.enableButton())
-    .catch(onError);
-}
+  
+    try {
+      const data = await API.fetchPixabay(searchValue, currentPage);
+      totalHits = data.hits.length;
+      console.log(data);
+
+      if(totalHits >= data.totalHits) {
+        loadingButton.hideButton();
+        Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.");
+    }
+
+      if (data.hits.length === 0) {
+        throw new Error("Sorry, there are no images matching your search query. Please try again.");
+      } else {
+        const markup = data.hits.reduce((markup, hit) => markup + addMarkUp(hit), " ");
+        updateSearch(markup);
+        loadingButton.enableButton();
+
+        
+      }
+    } catch (error) {
+      onError(error);
+    }
+  }
 
 //creating markUp for the given search
 function updateSearch(markup) {
@@ -82,8 +109,8 @@ function clearGallery() {
 
 
 //creating html markup for every picture
-function addMarkUp(hit) {
-    const {webformatURL, largeImageURL, tags, likes, views, comments, downloads} = hit;
+function addMarkUp(hits) {
+    const {webformatURL, largeImageURL, tags, likes, views, comments, downloads} = hits;
     return `
     <div class="photo-card">
         <a href="${largeImageURL}">
@@ -111,7 +138,7 @@ function addMarkUp(hit) {
 
 //throwing an error func
 function onError(error) {
-    alert(error);
+    Notiflix.Notify.info(error);
 }
 
 //lightbox
