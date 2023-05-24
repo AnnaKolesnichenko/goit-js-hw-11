@@ -6,7 +6,13 @@ const API_KEY = "36533445-a1e23ac088572808c637a5064";
 const image_type = "photo";
 const orientation = "horizontal";
 const safesearch = true;
-const filters = `&image_type=${image_type}&lang="en,ru"&orientation=${orientation}&safesearch=${safesearch}&per_page${40}`;
+const perPage = 40;
+const filters = `
+      &image_type=${image_type}
+      &lang="en,ru"
+      &orientation=${orientation}
+      &safesearch=${safesearch}
+      &per_page=${perPage}`;
 
 
  async function fetchPixabay(query, page = 1) {

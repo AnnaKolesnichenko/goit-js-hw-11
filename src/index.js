@@ -35,6 +35,7 @@ async function onSubmitForm(e) {
         return;
     }
 
+
     try {
         const data = await API.fetchPixabay(inputValue);
 
@@ -75,14 +76,17 @@ async function onUploadingMore() {
   
     try {
       const data = await API.fetchPixabay(searchValue, currentPage);
-      totalHits = data.hits.length;
+      //totalHits = data.hits.length;
       console.log(data);
+      console.log(currentPage);
+      console.log(totalHits);
 
-      if(totalHits >= data.totalHits) {
+      if(currentPage >= (data.totalHits / 40)) {
         loadingButton.hideButton();
         Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.");
     }
 
+    
       if (data.hits.length === 0) {
         throw new Error("Sorry, there are no images matching your search query. Please try again.");
       } else {
