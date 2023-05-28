@@ -25,7 +25,7 @@ const filters = `
     }) */
     try {
         const response = await axios.get(`${BASE_URL}?key=${API_KEY}&q=${query}&page=${page}${filters}`);
-        page += 1;
+        //page += 1;
         return response.data;
       } catch (error) {
         throw new Error(error);
